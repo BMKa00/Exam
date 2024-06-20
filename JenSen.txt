@@ -19,7 +19,7 @@ pipeline {
                         sh 'npm install selenium-webdriver'
 
                         // Run Selenium test and capture output
-                        def output = sh(script: 'node trainingExercise/test1.js', returnStdout: true).trim()
+                        def output = sh(script: 'node script/test1.js', returnStdout: true).trim()
 
                         // Print test output to Jenkins console
                         echo "Selenium Test Output (Testing): ${output}"
