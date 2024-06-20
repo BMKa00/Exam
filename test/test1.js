@@ -21,7 +21,7 @@ async function test_case() {
         // 4 | type | id=lastname | valencia
         //await driver.findElement(By.id("lastname")).sendKeys("valencia")
         //backgroundcolor, I guess
-        await driver.findElement(By.tagname('body'))
+        await driver.findElement(By.tagName('body'))
         backgroundColor = await bodyElement.getCssValue('background-color');
 
         //expected color
