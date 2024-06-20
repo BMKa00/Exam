@@ -8,47 +8,32 @@ pipeline {
         stage('Deploy to Testing') {
             steps {
                 sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@44.197.176.212 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
-                
-                script {
-                    try {
-                        // Install Selenium webdriver
-                        sh 'npm install selenium-webdriver'
-                        
-                        // Run the test and capture the output
-                        def output = sh(script: 'node test/test1.js', returnStdout: true).trim()
-                        
-                        // Debugging printing the output
-                        echo "Test Output: ${output}"
-                        
-                        // Write the result to a file
-                        if (output.contains('Test Success')) {
-                            writeFile file: env.TEST_RESULT_FILE, text: 'true'
-                        } else {
-                            writeFile file: env.TEST_RESULT_FILE, text: 'false'
-                        }
-                    } catch (Exception e) {
-                        echo "Test failed: ${e.message}"
+            script{
+                try{
+                    //Install Selenium webdriver
+                    sh 'npm install selenium-webdriver'
+                    
+                    //Run the test and capture the output
+                    def output = sh(script: 'node test/test1.js', returnStdout: true).trim()
+
+                    //Debugging printing the output
+                    echo "Test Output: ${output}"
+
+                    //Write the result to a file
+
+                    if(output.contains('Test Success')){
+                        writeFile file: env.TEST_RESULT_FILE, text: 'true'
+                    }else{
                         writeFile file: env.TEST_RESULT_FILE, text: 'false'
                     }
-                }
-                
-                // Post section for Deploy to Testing stage
-                post {
-                    always {
-                        echo 'Cleaning up...'
-                    }
-                    success {
-                        echo 'Testing stage succeeded!'
-                    }
-                    failure {
-                        echo 'Testing stage failed! Stopping further deployment...'
-                        currentBuild.result = 'FAILURE'
-                        error 'Testing stage failed!'
-                    }
+                }catch (Exception e) {
+                    echo "Test failed: ${e.message}"
+                    writeFile file: env.TEST_RESULT_FILE, text: 'false'
+                    
                 }
             }
-        }
-        
+             }
+        } 
         stage('Deploy to Staging') {
             steps {
                 sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@34.200.214.2 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
@@ -68,4 +53,3 @@ pipeline {
         }
     }
 }
-
