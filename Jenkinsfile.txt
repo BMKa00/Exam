@@ -1,0 +1,30 @@
+pipeline{
+    agent { label 'aws' }
+    environment{
+        TOKENAWS = credentials('controller-ssh-key')
+    }
+
+    stages{
+        
+        stage('Deploy to Testing'){
+            steps{
+            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@35.170.50.195 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo git clone https://github.com/eduval/TrainingExercise /var/www/html"'
+            }
+        }
+        stage('Deploy to Staging'){
+            steps{
+            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@54.235.231.146 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo git clone https://github.com/eduval/TrainingExercise /var/www/html"'
+            }
+        }
+        stage('Deploy to Production_Env1'){
+            steps{
+            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@3.87.93.67 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo git clone https://github.com/eduval/TrainingExercise /var/www/html"'
+            }
+        }
+        stage('Deploy to Production_Env2'){
+            steps{
+            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@54.156.48.21 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo git clone https://github.com/eduval/TrainingExercise /var/www/html"'
+            }
+        }
+    }
+}
