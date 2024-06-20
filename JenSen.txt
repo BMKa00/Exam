@@ -1,56 +1,63 @@
-pipeline{
+pipeline {
     agent { label 'aws' }
-    environment{
+    environment {
         TOKENAWS = credentials('controller-ssh-key')
+        TEST_RESULT_FILE = 'test_result.txt' // File to store test result
     }
-    stages{ 
-        stage('Deploy to Testing'){
-            steps{
-            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@44.197.176.212 " sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exame /var/www/html"'
+    stages {
+        stage('Deploy to Testing') {
+            steps {
+                sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@44.197.176.212 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
             }
-                          script{
-                try{
-                    //Install Selenium webdriver
-                    sh 'npm install selenium-webdriver'
-                    
-                    //Run the test and capture the output
-                    def output = sh(script: 'node test/test1.js', returnStdout: true).trim()
+        }
+        
+        stage('Run Selenium Tests in Testing') {
+            steps {
+                script {
+                    try {
+                        // Install Selenium WebDriver
+                        sh 'npm install selenium-webdriver'
 
-                    //Debugging printing the output
-                    echo "Test Output: ${output}"
+                        // Run Selenium test and capture output
+                        def output = sh(script: 'node trainingExercise/test1.js', returnStdout: true).trim()
 
-                    //Write the result to a file
+                        // Print test output to Jenkins console
+                        echo "Selenium Test Output (Testing): ${output}"
 
-                    if(output.contains('Test Success')){
-                        writeFile file: env.TEST_RESULT_FILE, text: 'true'
-                    }else{
-                        writeFile file: env.TEST_RESULT_FILE, text: 'false'
+                        // Write test result to a file
+                        writeFile file: TEST_RESULT_FILE, text: output
+
+                        // Determine build status based on test outcome
+                        if (output.contains('Test Success')) {
+                            currentBuild.result = 'SUCCESS'
+                        } else {
+                            currentBuild.result = 'FAILURE'
+                        }
+                    } catch (Exception e) {
+                        echo "Selenium test execution failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        error('Selenium test execution failed')
                     }
-                }catch (Exception e) {
-                    echo "Test failed: ${e.message}"
-                    writeFile file: env.TEST_RESULT_FILE, text: 'false'
-                                        }
-                                    }
-                                }
-         
-
-            
-        }
-        stage('Deploy to Staging'){
-            steps{
-            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@34.200.214.2 " sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
+                }
             }
         }
-        stage('Deploy to Production_Env1'){
-            steps{
-            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@54.211.245.127 " sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
+        
+        stage('Deploy to Staging') {
+            steps {
+                sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@34.200.214.2 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
             }
         }
-        stage('Deploy to Production_Env2'){
-            steps{
-            sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@3.239.222.199 " sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
+        
+        stage('Deploy to Production_Env1') {
+            steps {
+                sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@54.211.245.127 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
             }
         }
-     
+        
+        stage('Deploy to Production_Env2') {
+            steps {
+                sh 'ssh -T -oStrictHostKeyChecking=no -i "$TOKENAWS" ec2-user@3.239.222.199 "sudo dnf update; sudo dnf install git -y; sudo dnf install -y httpd; sudo systemctl start httpd; sudo rm -Rf /var/www/html/; sudo git clone https://github.com/BMKa00/Exam /var/www/html"'
+            }
+        }
     }
-
+}
