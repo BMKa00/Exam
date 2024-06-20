@@ -3,32 +3,27 @@ const chrome = require("selenium-webdriver/chrome");
 
 async function test_case() {
 
-    //Set Chrome option
+    // Set Chrome options
     let options = new chrome.Options();
     options.addArguments('headless');
-    options.addArguments('disable-gpu')
+    options.addArguments('disable-gpu');
     options.setChromeBinaryPath('/usr/bin/google-chrome');
 
     // Create a Driver
     let driver = await new Builder().forBrowser("chrome").setChromeOptions(options).build();
 
     try {
-        //Send driver to website
+        // Send driver to website
         await driver.get("http://44.197.176.212");
 
-        //Grab an element from the page
-        //await driver.findElement(By.id("lastname")).click()
-        // 4 | type | id=lastname | valencia
-        //await driver.findElement(By.id("lastname")).sendKeys("valencia")
-        //backgroundcolor, I guess
-        await driver.findElement(By.tagName('body'))
-        backgroundColor = await bodyElement.getCssValue('background-color');
+        // Find the body element and get its background color
+        let bodyElement = await driver.findElement(By.tagName('body'));
+        let backgroundColor = await bodyElement.getCssValue('background-color');
 
-        //expected color
-        expectedColor = 'rgb(0, 128, 0)'; //expected color , green
+        // Expected color
+        let expectedColor = 'rgb(0, 128, 0)'; // Expected color: green
 
-        //Check the result
-
+        // Check the result
         if (backgroundColor !== expectedColor) {
             throw new Error(`Background color mismatch. Expected: ${expectedColor}, Actual: ${backgroundColor}`);
         } else {
@@ -41,4 +36,6 @@ async function test_case() {
     }
 
 }
+
 test_case();
+
