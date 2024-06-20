@@ -3,7 +3,6 @@ pipeline{
     environment{
         TOKENAWS = credentials('controller-ssh-key')
     }
-
     stages{ 
         stage('Deploy to Testing'){
             steps{
